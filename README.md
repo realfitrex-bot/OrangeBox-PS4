@@ -27,9 +27,39 @@ The PKG contains **only** the engine and game binaries, a few configuration file
 
 ---
 
-## 🚀 Installation, Step by Step
+## 🚀 Installation
 
-You need: a PS4 with **GoldHEN**, a Windows PC, and a Steam account that owns **Half-Life 2** (and the other games you want to play).
+You need: a PS4 with **GoldHEN**, a Windows PC or a Mac, and a Steam account that owns **Half-Life 2** (and the other games you want to play).
+
+### The easy way: the installer (recommended)
+
+1. From the **Releases** section of this repository download `OrangeBoxSP.pkg` and the installer for your computer:
+   `OrangeBox-PS4-Installer-Windows.exe` or `OrangeBox-PS4-Installer-Mac.zip`.
+2. Install the PKG on the PS4 with GoldHEN: **Settings → Debug Settings → Game → Package Installer**.
+3. On the PS4, turn on the GoldHEN **FTP server** (GoldHEN menu → Server Settings → FTP).
+4. Run the installer on your computer and answer its questions. It:
+   * finds your PS4 on the network by itself;
+   * downloads the right versions of your games with **SteamCMD**, Valve's official command-line Steam client.
+     You type your Steam password and Steam Guard code into SteamCMD itself: the installer never sees or keeps them;
+   * checks the files and uploads them to the PS4. If something breaks off, run it again: it continues where it
+     stopped.
+5. Start **Orange Box SP** on the PS4.
+
+The download is about 10 GB, and the upload over Wi-Fi takes a while. The next time the installer remembers your
+answers (never your password).
+
+> **Windows:** SmartScreen may say *"Windows protected your PC"*, because the installer is not signed. Click
+> **More info → Run anyway**.
+>
+> **Mac (Apple Silicon):** unzip, then right-click the file → **Open** → **Open**. If macOS still blocks it:
+> System Settings → Privacy & Security → **Open Anyway**. SteamCMD needs Rosetta; the installer tells you if it is
+> missing. On an Intel Mac, or if you prefer, run `installer/install_mac.command` from this repository (needs Python 3).
+
+If the PS4 shows its help screen (*"No games found"* or *"… not found"*), scan its QR code with your phone: it opens this page.
+
+### The manual way
+
+You can do the same by hand.
 
 In the end the console must have this:
 
@@ -59,14 +89,16 @@ The PS4 runs the Linux build of the games, and only the Linux `hl2` folder has t
 
 For the other games, run the same command with their own folder and app ID, and take the game's folder from there:
 
-| Game | App ID | Folder to copy |
-|---|---|---|
-| Half-Life 2: Episode One | `380` | `episodic` |
-| Half-Life 2: Episode Two | `420` | `ep2` |
-| Portal | `400` | `portal` |
-| Half-Life: Source | `280` | `hl1` |
+| Game | App ID | Branch | Folder to copy |
+|---|---|---|---|
+| Half-Life 2: Episode One | `380` | `-beta steam_legacy` | `episodic` |
+| Half-Life 2: Episode Two | `420` | `-beta steam_legacy` | `ep2` |
+| Portal | `400` | none (it has no steam_legacy) | `portal` |
+| Half-Life: Source | `280` | none (it has no steam_legacy) | `hl1` |
 
-Example for Episode Two: `... +force_install_dir C:\ep2_linux ... +app_update 420 -beta steam_legacy validate +quit`. If SteamCMD says the beta does not exist for a game, run the command without `-beta steam_legacy`.
+Example for Episode Two: `... +force_install_dir C:\ep2_linux ... +app_update 420 -beta steam_legacy validate +quit`.
+For Portal: `... +force_install_dir C:\portal_linux ... +app_update 400 validate +quit`. Half-Life 2 and the episodes
+must be steam_legacy: their current version is the 20th Anniversary one, which does not work.
 
 ### Step 2. Install the PKG on the PS4
 1. Download `OrangeBoxSP.pkg` from the **Releases** section of this repository.
