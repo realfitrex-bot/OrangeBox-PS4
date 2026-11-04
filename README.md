@@ -117,6 +117,11 @@ must be steam_legacy: their current version is the 20th Anniversary one, which d
 
    This is several gigabytes. Wait until FileZilla reports that every transfer finished.
 
+**Prefer USB?** FTP is not required: the game only needs the folders in `/data/sourceeng/`, however they get there.
+Copy them to a USB stick (FAT32 or exFAT), plug it into the PS4 and use a homebrew file manager (for example
+Itemzflow) to copy them from `/mnt/usb0/` into `/data/sourceeng/`, keeping the same folder names. The games cannot
+run straight from the USB stick. The installer from *The easy way* always uploads over FTP.
+
 ### Step 4. Play
 1. Start **Orange Box SP** from the PS4 home screen.
 2. Pick a game from the list and press Cross.
