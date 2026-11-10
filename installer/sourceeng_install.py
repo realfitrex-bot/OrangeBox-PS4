@@ -336,8 +336,49 @@ def save_settings(work, d):
         os.makedirs(work, exist_ok=True)
         with open(os.path.join(work, 'settings.json'), 'w') as f:
             json.dump(d, f, indent=1)
+        return True
     except OSError:
-        pass
+        return False
+
+
+def valid_steam_username(user):
+    return bool(re.fullmatch(r'[A-Za-z0-9_]{3,64}', user or ''))
+
+
+def ask_steam_username(default=None):
+    while True:
+        user = ask('Steam login name', default)
+        if valid_steam_username(user):
+            return user
+        say('Invalid Steam username. Use 3-64 letters, numbers, or underscores.')
+        default = None
+
+
+def settings_menu(work, settings):
+    say('Installer settings:')
+    say('  1. Continue')
+    say('  2. Change Steam Username')
+    say('  3. Reset Settings')
+    while True:
+        choice = ask('Choose an option', '1').lower()
+        if choice in ('1', 'continue'):
+            return settings, None
+        if choice in ('2', 'change steam username'):
+            return settings, ask_steam_username()
+        if choice in ('3', 'reset settings'):
+            if yes('Reset saved settings? Downloaded game files will not be deleted.', False):
+                path = os.path.join(work, 'settings.json')
+                try:
+                    os.remove(path)
+                except FileNotFoundError:
+                    pass
+                except OSError as e:
+                    sys.exit('Could not reset settings: %s' % e)
+                say('Saved settings reset. Downloaded game files were left untouched.')
+                return {}, None
+            say('Settings were not changed.')
+            return settings, None
+        say('Choose 1, 2, or 3.')
 
 
 def ftp_connect(host):
@@ -437,6 +478,7 @@ def main():
 
     say('Source games for PS4: installer\n')
     last = load_settings(a.work)
+    last, selected_user = settings_menu(a.work, last)
     edition = a.edition
     while edition not in EDITIONS:
         edition = ask('Which app? css = Counter-Strike: Source, sp = Orange Box SP',
@@ -452,16 +494,18 @@ def main():
                 if yes('Also %s (you must own it on Steam)?' % GAMES[g][0], g in had):
                     games.append(g)
     host = a.ps4 or (None if a.no_upload else pick_ps4(last.get('ps4')))
-    user = a.steam_user or ask('Steam login name', last.get('steam_user'))
-    if not user:
-        sys.exit('A Steam login name is needed.')
+    user = (a.steam_user or selected_user or ask_steam_username(last.get('steam_user'))).strip()
+    if not valid_steam_username(user):
+        sys.exit('Invalid Steam username. Use 3-64 letters, numbers, or underscores.')
 
     if host:
         try:
             ftp_connect(host).quit()
         except ftplib.all_errors + (OSError,) as e:
             sys.exit('Cannot reach the PS4 over FTP (%s). Turn on the GoldHEN FTP server and check the IP.' % e)
-    save_settings(a.work, {'edition': edition, 'games': games, 'ps4': host or last.get('ps4'), 'steam_user': user})
+    settings = {'edition': edition, 'games': games, 'ps4': host or last.get('ps4')}
+    if not save_settings(a.work, settings):
+        sys.exit('Could not update installer settings. Check that the settings folder is writable.')
 
     os.makedirs(a.work, exist_ok=True)
     exe = steamcmd_path(a.work)
@@ -470,11 +514,14 @@ def main():
         dest = os.path.join(a.work, 'steam_' + g)
         if not steamcmd_download(exe, user, g, dest):
             sys.exit('\n%s was not downloaded.\n'
-                     '  If SteamCMD said "No subscription": this Steam account does not own %s. Buy it on Steam,\n'
-                     '  or log in with the account that owns it.\n'
-                     '  Otherwise (network, disk space, Steam Guard): run the installer again, it continues.'
-                     % (GAMES[g][0], GAMES[g][0]))
+                     '  The Steam username was not saved, so it will not be reused on the next launch.\n'
+                     '  Check the username and game ownership. For network, disk space, or Steam Guard issues,\n'
+                     '  fix the problem and run the installer again.' % GAMES[g][0])
         dirs[g] = dest
+
+    settings['steam_user'] = user
+    if not save_settings(a.work, settings):
+        say('Could not save installer settings; your Steam username will be requested next time.')
 
     # What lands in /data/sourceeng: hl2 and platform from the Linux steam_legacy hl2, the other games' folders from
     # their own downloads. Counter-Strike: Source's own hl2 is the 20th Anniversary engine's and is never used.

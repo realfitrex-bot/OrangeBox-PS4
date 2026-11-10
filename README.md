@@ -46,7 +46,9 @@ You need: a PS4 with **GoldHEN**, a Windows PC or a Mac, and a Steam account tha
 5. Start **Orange Box SP** on the PS4.
 
 The download is about 10 GB, and the upload over Wi-Fi takes a while. The next time the installer remembers your
-answers (never your password).
+answers (never your password). At startup, choose **Change Steam Username** to enter a different login, or
+**Reset Settings** to clear saved answers. Resetting asks for confirmation and does not delete downloaded game files.
+If SteamCMD cannot download a game, the entered username is not saved and will not be reused on the next launch.
 
 > **Windows:** SmartScreen may say *"Windows protected your PC"*, because the installer is not signed. Click
 > **More info → Run anyway**.
